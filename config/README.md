@@ -1,35 +1,35 @@
-# 配置示例
+# Configuration Examples
 
-这个目录放当前仓库使用的训练配置示例。
+This directory contains training configuration examples used by the repository.
 
-现有文件：
+Available files:
 
-- `train_lora_flux_dev_modal_minimal.yaml`：适合 Modal 的最小 FLUX LoRA 训练模板
+- `train_lora_flux_dev_modal_minimal.yaml` — Minimal FLUX LoRA training template for Modal
 
-使用方式：
+Usage:
 
-1. 把 [`.env.example`](/C:/Users/Xiao/Desktop/github/ai-toolkit-modal/.env.example) 中的训练配置改成：
+1. Update the training config in [`.env`](../.env.example):
 
 ```dotenv
 AI_TOOLKIT_LOCAL_CONFIG_DIR=./config
 AI_TOOLKIT_TRAIN_CONFIG=train_lora_flux_dev_modal_minimal.yaml
 ```
 
-2. 按你的实际情况修改 YAML 里的：
+2. Edit the YAML file to match your setup:
 
 - `name`
 - `datasets[0].folder_path`
 - `model.name_or_path`
 - `sample.prompts`
 
-3. 运行训练：
+3. Run training:
 
 ```powershell
 modal run .\run_ai_toolkit_train.py
 ```
 
-说明：
+Notes:
 
-- 当前模板默认使用容器内数据集路径 `/root/ai-toolkit/datasets/ash`
-- 这只是最小起步模板，不保证适合所有显卡和模型版本
-- 如果你的 GPU 不是 24GB 级别，通常需要进一步调低分辨率、采样频率或更换模型配置
+- The default template uses the in-container dataset path `/root/ai-toolkit/datasets/ash`
+- This is a minimal starter template and may not be suitable for all GPU types and model versions
+- If your GPU has less than 24GB VRAM, you'll likely need to reduce resolution, sampling frequency, or switch model configurations

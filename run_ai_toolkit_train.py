@@ -235,8 +235,8 @@ def normalize_config_path(config_value: str) -> str:
     resolved = resolve_container_config_path(config_value)
     if not resolved:
         raise ValueError(
-            "缺少训练配置文件。请在 .env 中设置 AI_TOOLKIT_TRAIN_CONFIG，"
-            "或在 modal run 时传入 --config-file-list-str。"
+            "Missing training config. Set AI_TOOLKIT_TRAIN_CONFIG in .env "
+            "or pass --config-file-list-str to modal run."
         )
     return resolved
 
@@ -245,8 +245,8 @@ def normalize_config_list(config_value: str) -> list[str]:
     items = [item.strip() for item in config_value.replace(";", ",").split(",") if item.strip()]
     if not items:
         raise ValueError(
-            "缺少训练配置文件。请在 .env 中设置 AI_TOOLKIT_TRAIN_CONFIG，"
-            "或在 modal run 时传入 --config-file-list-str。"
+            "Missing training config. Set AI_TOOLKIT_TRAIN_CONFIG in .env "
+            "or pass --config-file-list-str to modal run."
         )
     return [normalize_config_path(item) for item in items]
 
