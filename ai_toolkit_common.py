@@ -22,22 +22,17 @@ LOCAL_CONFIGS_MOUNT_PATH = "/root/local_configs"
 def load_dotenv(dotenv_path: Path) -> None:
     if not dotenv_path.exists():
         return
-
     for raw_line in dotenv_path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
-
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip()
-
         if not key:
             continue
-
         if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
             value = value[1:-1]
-
         os.environ.setdefault(key, value)
 
 
@@ -52,28 +47,22 @@ def env_int(name: str, default: int) -> int:
 def existing_local_dir(path_value: str) -> str:
     if not path_value:
         return ""
-
     local_path = Path(path_value).expanduser()
     if not local_path.is_absolute():
         local_path = (ROOT_DIR / local_path).resolve()
-
     if local_path.exists() and local_path.is_dir():
         return str(local_path)
-
     return ""
 
 
 def resolve_local_file(path_value: str) -> str:
     if not path_value:
         return ""
-
     local_path = Path(path_value).expanduser()
     if not local_path.is_absolute():
         local_path = (ROOT_DIR / local_path).resolve()
-
     if local_path.exists() and local_path.is_file():
         return str(local_path)
-
     return ""
 
 
@@ -98,6 +87,7 @@ TRAIN_CONFIG_FILE = os.environ.get("AI_TOOLKIT_TRAIN_CONFIG", "")
 TRAIN_EXTRA_ARGS = os.environ.get("AI_TOOLKIT_TRAIN_EXTRA_ARGS", "")
 TRAIN_OUTPUT_DIR = os.environ.get("AI_TOOLKIT_TRAIN_OUTPUT_DIR", MODEL_MOUNT_PATH)
 
+hf_cache_volume = modal.Volume.from_name("ai-toolkit-hf-cache", create_if_missing=True)
 persist_volume = modal.Volume.from_name(PERSIST_VOLUME_NAME, create_if_missing=True)
 datasets_volume = modal.Volume.from_name(DATA_VOLUME_NAME, create_if_missing=True)
 model_volume = modal.Volume.from_name(MODEL_VOLUME_NAME, create_if_missing=True)
@@ -118,14 +108,13 @@ def build_image(include_ui_build: bool) -> modal.Image:
             "libglib2.0-0",
         )
         .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "DISABLE_TELEMETRY": "YES"})
-        .add_local_dir(str(ROOT_DIR), "/tmp/_build_ctx", copy=True)
+        .add_local_dir(str(ROOT_DIR), "/root/_build_ctx", copy=True)
         .run_commands(
             "bash -lc 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash -'",
             "bash -lc 'apt-get update && apt-get install -y nodejs'",
             "bash -lc 'rm -rf /root/ai-toolkit && git clone --recursive https://github.com/ostris/ai-toolkit.git /root/ai-toolkit'",
             "bash -lc 'cd /root/ai-toolkit && git submodule update --init --recursive'",
-            "bash -lc 'python /tmp/_build_ctx/patch_convrot.py'",
-            "bash -lc \"python -c \\\"from pathlib import Path; p=Path('/root/ai-toolkit/ui/src/app/api/img/[...imagePath]/route.ts'); t=p.read_text(encoding='utf-8'); o='const filepath = decodeURIComponent(imagePath);'; n='const rawPath = Array.isArray(imagePath) ? imagePath.join(\\'/\\') : imagePath;\\\\n    let filepath = decodeURIComponent(rawPath);\\\\n    if (!filepath.startsWith(\\'/\\')) {\\\\n      filepath = \\'/\\' + filepath;\\\\n    }'; assert o in t, f'patch target not found: {p}'; p.write_text(t.replace(o, n, 1), encoding='utf-8')\\\"\"",
+            "bash -lc 'python /root/_build_ctx/patch_convrot.py'",
             "bash -lc 'python -m pip install --upgrade pip'",
             "bash -lc 'python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121'",
             "bash -lc 'python -m pip install -r /root/ai-toolkit/requirements.txt'",
@@ -201,20 +190,16 @@ def replace_with_symlink(link_path: str, target_path: str) -> None:
         os.remove(link_path)
     elif os.path.isdir(link_path):
         shutil.rmtree(link_path)
-
     os.symlink(target_path, link_path)
 
 
 def sync_directory(source_root: str, target_root: str, overwrite: bool) -> None:
     if not os.path.exists(source_root):
         return
-
     os.makedirs(target_root, exist_ok=True)
-
     for item in os.listdir(source_root):
         src = os.path.join(source_root, item)
         dst = os.path.join(target_root, item)
-
         if os.path.isdir(src):
             if os.path.exists(dst):
                 if overwrite:
@@ -230,10 +215,8 @@ def sync_directory(source_root: str, target_root: str, overwrite: bool) -> None:
 def prepare_datasets() -> None:
     if os.path.exists(LOCAL_DATA_MOUNT_PATH):
         sync_directory(LOCAL_DATA_MOUNT_PATH, DATA_MOUNT_PATH, overwrite=True)
-
     if os.path.exists(LOCAL_DATASET_SOURCE_MOUNT_PATH):
         sync_directory(LOCAL_DATASET_SOURCE_MOUNT_PATH, DATA_MOUNT_PATH, overwrite=False)
-
     try:
         datasets_volume.commit()
     except Exception as exc:
@@ -243,10 +226,8 @@ def prepare_datasets() -> None:
 def resolve_container_config_path(config_value: str) -> str:
     if not config_value:
         return ""
-
     if config_value.startswith("/"):
         return config_value
-
     local_file = resolve_local_file(config_value)
     if local_file and LOCAL_CONFIG_DIR:
         local_config_dir_path = Path(LOCAL_CONFIG_DIR)
@@ -255,5 +236,4 @@ def resolve_container_config_path(config_value: str) -> str:
             return f"{LOCAL_CONFIGS_MOUNT_PATH}/{relative_path.as_posix()}"
         except ValueError:
             pass
-
     return f"{LOCAL_CONFIGS_MOUNT_PATH}/{Path(config_value).as_posix()}"
