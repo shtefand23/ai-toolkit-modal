@@ -118,11 +118,13 @@ def build_image(include_ui_build: bool) -> modal.Image:
             "libglib2.0-0",
         )
         .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "DISABLE_TELEMETRY": "YES"})
+        .add_local_dir(str(ROOT_DIR), "/tmp/_build_ctx", copy=True)
         .run_commands(
             "bash -lc 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash -'",
             "bash -lc 'apt-get update && apt-get install -y nodejs'",
             "bash -lc 'rm -rf /root/ai-toolkit && git clone --recursive https://github.com/ostris/ai-toolkit.git /root/ai-toolkit'",
             "bash -lc 'cd /root/ai-toolkit && git submodule update --init --recursive'",
+            "bash -lc 'python /tmp/patch_convrot.py'",
             "bash -lc \"python -c \\\"from pathlib import Path; p=Path('/root/ai-toolkit/ui/src/app/api/img/[...imagePath]/route.ts'); t=p.read_text(encoding='utf-8'); o='const filepath = decodeURIComponent(imagePath);'; n='const rawPath = Array.isArray(imagePath) ? imagePath.join(\\'/\\') : imagePath;\\\\n    let filepath = decodeURIComponent(rawPath);\\\\n    if (!filepath.startsWith(\\'/\\')) {\\\\n      filepath = \\'/\\' + filepath;\\\\n    }'; assert o in t, f'patch target not found: {p}'; p.write_text(t.replace(o, n, 1), encoding='utf-8')\\\"\"",
             "bash -lc 'python -m pip install --upgrade pip'",
             "bash -lc 'python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121'",
