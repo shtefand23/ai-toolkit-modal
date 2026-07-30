@@ -139,7 +139,7 @@ except ModuleNotFoundError:
 
         if include_ui_build:
             image = image.run_commands(
-                "bash -lc 'cd /root/ai-toolkit/ui && npm install && npm run update_db && npm run build'"
+                "bash -lc 'cd /root/ai-toolkit/ui && npm install sqlite3@5.1.6 && npm install && npm run update_db && npm run build'"
             )
 
         if LOCAL_DATA_FOLDER:
