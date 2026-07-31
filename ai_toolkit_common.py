@@ -118,6 +118,7 @@ def build_image(include_ui_build: bool) -> modal.Image:
             "bash -lc 'python -m pip install --upgrade pip'",
             "bash -lc 'python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121'",
             "bash -lc 'python -m pip install -r /root/ai-toolkit/requirements.txt'",
+            "bash -lc 'python -m pip install transformers==4.45.2'",
         )
     )
 
