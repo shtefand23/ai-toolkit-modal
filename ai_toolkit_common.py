@@ -117,7 +117,9 @@ def build_image(include_ui_build: bool) -> modal.Image:
             "bash -lc 'python /root/_build_ctx/patch_convrot.py'",
             "bash -lc 'python -m pip install --upgrade pip'",
             "bash -lc 'python -m pip install torch==2.13.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126'",
+            "bash -lc 'python -c \"import torch; print(f'torch version: {torch.__version__}')\"'",
             "bash -lc 'python -m pip install -r /root/ai-toolkit/requirements.txt'",
+            "bash -lc 'python -c \"import torch; print(f'torch after requirements: {torch.__version__}')\"'",
         )
     )
 

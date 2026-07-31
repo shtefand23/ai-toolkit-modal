@@ -133,7 +133,9 @@ except ModuleNotFoundError:
                 "bash -lc \"python -c \\\"from pathlib import Path; p=Path('/root/ai-toolkit/ui/src/app/api/img/[...imagePath]/route.ts'); t=p.read_text(encoding='utf-8'); o='const filepath = decodeURIComponent(imagePath);'; n='const rawPath = Array.isArray(imagePath) ? imagePath.join(\\'/\\') : imagePath;\\\\n    let filepath = decodeURIComponent(rawPath);\\\\n    if (!filepath.startsWith(\\'/\\')) {\\\\n      filepath = \\'/\\' + filepath;\\\\n    }'; assert o in t, f'patch target not found: {p}'; p.write_text(t.replace(o, n, 1), encoding='utf-8')\\\"\"",
                 "bash -lc 'python -m pip install --upgrade pip'",
                 "bash -lc 'python -m pip install torch==2.13.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126'",
+                "bash -lc 'python -c \"import torch; print(f\'torch version: {torch.__version__}\')\"'",
                 "bash -lc 'python -m pip install -r /root/ai-toolkit/requirements.txt'",
+                "bash -lc 'python -c \"import torch; print(f\'torch after requirements: {torch.__version__}\')\"'",
             )
         )
 
